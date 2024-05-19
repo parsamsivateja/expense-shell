@@ -10,7 +10,7 @@ rm -rf /usr/share/nginx/html/* >>$log_file
 
 
 echo Downloading Frontend code
-curl -o /tmp/frontend.zip https://expense-artifacts.s3.amazonaws.com/frontend.zip >>$log_file
+curl -s -o /tmp/frontend.zip https://expense-artifacts.s3.amazonaws.com/frontend.zip >>$log_file
 
 cd /usr/share/nginx/html
 
