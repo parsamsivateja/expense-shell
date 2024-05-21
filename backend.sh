@@ -1,37 +1,52 @@
 source common.sh
-dnf module disable nodejs -y >>$log_file
-dnf module enable nodejs:18 -y >>$log_file
+component=backend
 
-echo install nodejs
-dnf install nodejs -y >>$log_file
+type npm &>>$log_file
+if [ $? -ne 0 ]; then
+  echo Install NodeJS Repos
+  curl -sL https://rpm.nodesource.com/setup_lts.x | bash &>>$log_file
+  stat_check
 
-echo copy backend service
-cp backend.service /etc/systemd/system/backend.service >>$log_file
+  echo Install NodeJS
+  dnf install nodejs -y &>>$log_file
+  stat_check
+fi
 
-echo Add application user
-useradd expense >>$log_file
+echo Copy Backend Service File
+cp backend.service /etc/systemd/system/backend.service &>>$log_file
+stat_check
 
-echo clean app content
-rm -rf /app  >>$log_file
-mkdir /app  >>$log_file
+echo Add Application User
+id expense &>>$log_file
+if [ $? -ne 0 ]; then
+  useradd expense &>>$log_file
+fi
+stat_check
 
-echo Download app content
-curl -s -o /tmp/backend.zip https://expense-artifacts.s3.amazonaws.com/backend.zip >>$log_file
+echo Clean App Content
+rm -rf /app &>>$log_file
+stat_check
 
+mkdir /app
 cd /app
-echo Extract app content
-unzip /tmp/backend.zip >>$log_file
 
-echo dowload Dependencies
-npm install >>$log_file
+download_and_extract
 
-echo start backend service
-systemctl daemon-reload >>$log_file
-systemctl enable backend >>$log_file
-systemctl start backend  >>$log_file
+echo Download Dependencies
+npm install &>>$log_file
+stat_check
 
-echo Install mysql client
-dnf install mysql -y >>$log_file
+echo Start Backend Service
+systemctl daemon-reload &>>$log_file
+systemctl enable backend &>>$log_file
+systemctl restart backend &>>$log_file
+stat_check
 
-echo load the schema
-mysql -h mysql.sivateja25.online -uroot -pExpenseApp@1 < /app/schema/backend.sql >>$log_file
+echo Install MySQL Client
+dnf install mysql -y &>>$log_file
+stat_check
+
+echo Load Schema
+mysql_root_password=$1
+mysql -h mysql.rdevopsb73.online -uroot -p$mysql_root_password < /app/schema/backend.sql &>>$log_file
+stat_check
