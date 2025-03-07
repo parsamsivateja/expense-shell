@@ -19,5 +19,5 @@ stat_check
 
 echo Setup root Password
 mysql_root_password=$1
-mysql_secure_installation --set-root-pass $mysql_root_password &>>$log_file
+mysql -h shell.parsamsivateja.online -uroot -p$mysql_root_password < /app/schema/backend.sql &>>$log_file
 stat_check
